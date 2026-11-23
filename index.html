@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BREACHCRAFT // تجربة تفاعلية</title>
+<style>
+:root{color-scheme:dark;--green:#63ff9b;--muted:#8aa995}
+*{box-sizing:border-box}
+body{margin:0;background:#050b08;color:#d9ffe6;font-family:system-ui,Tahoma,Arial,sans-serif}
+main{max-width:760px;margin:36px auto;padding:22px}
+.panel{border:1px solid #1c7040;background:#09150f;border-radius:14px;padding:22px;box-shadow:0 0 28px #00ff6618}
+h1{color:var(--green);letter-spacing:2px;font-size:clamp(25px,6vw,42px);margin:0}
+.sub{color:var(--muted);margin:6px 0 22px}
+.screen{background:#020604;border:1px solid #194b30;border-radius:10px;padding:16px;min-height:160px;font-family:ui-monospace,monospace;color:#78fda8;line-height:1.8;white-space:pre-wrap}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+button{background:#145b32;color:#eafff0;border:1px solid #63ff9b;border-radius:8px;padding:12px 16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.notice{border-right:3px solid #63ff9b;padding:10px 13px;background:#102319;color:#c9f8d7;border-radius:6px;line-height:1.7}
+video{width:100%;max-height:340px;background:#000;border-radius:10px;margin-top:12px;display:none}
+.small{font-size:13px;color:#9ab5a3;line-height:1.7}
+footer{color:#789482;font-size:12px;text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+<section class="panel">
+<h1>BREACHCRAFT</h1>
+<p class="sub">واجهة محاكاة سايبر — تجربة تفاعلية آمنة</p>
+<div class="screen" id="logs">[SYSTEM] تم تشغيل واجهة المحاكاة
+[SCAN] جاري فحص الاتصال...
+[STATUS] بانتظار بدء التجربة</div>
+<div class="row">
+<button id="start">ابدأ المحاكاة</button>
+<button id="camera">تشغيل الكاميرا بموافقتك</button>
+<button id="stop" disabled>إيقاف الكاميرا</button>
+</div>
+<div class="notice">
+<strong>تنبيه الخصوصية:</strong> تشغيل الكاميرا اختياري. لن تعمل إلا بعد ضغطك على الزر والموافقة على طلب المتصفح. الصورة تبقى على هذا الجهاز ولا يتم بثها أو تسجيلها أو رفعها.
+</div>
+<video id="preview" autoplay playsinline muted></video>
+<p class="small">هذه صفحة تجريبية للواجهة فقط. لا تجمع بيانات ولا تتيح مشاهدة كاميرا أي شخص عن بُعد.</p>
+</section>
+<footer>BREACHCRAFT // LOCAL DEMO</footer>
+</main>
+<script>
+const logs=document.getElementById('logs');
+const start=document.getElementById('start');
+const camera=document.getElementById('camera');
+const stop=document.getElementById('stop');
+const preview=document.getElementById('preview');
+let stream=null;
+start.addEventListener('click',()=>{
+  logs.textContent='[SYSTEM] بدء المحاكاة...\\n[SCAN] فحص الواجهة 100%\\n[SECURITY] لا يوجد اتصال خارجي\\n[STATUS] اكتملت المحاكاة بنجاح';
+});
+camera.addEventListener('click',async()=>{
+  if(!navigator.mediaDevices?.getUserMedia){
+    logs.textContent+='\\n[CAMERA] المتصفح لا يدعم الكاميرا هنا. افتح الصفحة عبر HTTPS أو localhost.';
+    return;
+  }
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    preview.srcObject=stream; preview.style.display='block';
+    camera.disabled=true; stop.disabled=false;
+    logs.textContent+='\\n[CAMERA] تم تشغيل المعاينة المحلية بعد موافقتك.';
+  }catch(e){
+    logs.textContent+='\\n[CAMERA] لم يتم منح الإذن أو تعذر تشغيل الكاميرا.';
+  }
+});
+stop.addEventListener('click',()=>{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  stream=null; preview.srcObject=null; preview.style.display='none';
+  camera.disabled=false; stop.disabled=true;
+  logs.textContent+='\\n[CAMERA] تم إيقاف الكاميرا.';
+});
+</script>
+</body>
+</html>
